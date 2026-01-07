@@ -12,9 +12,9 @@ env/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Artifacts and models
-artifacts/
-*.pkl
+# Artifacts and models (model_pipeline.pkl is tracked)
+# artifacts/
+# *.pkl
 *.cbm
 *.joblib
 

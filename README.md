@@ -47,14 +47,40 @@ python -m venv .venv
 ```bash
 .\.venv\Scripts\python -m uvicorn api.main:app --reload
 ```
-Запрос:
+После запуска откройте в браузере: http://127.0.0.1:8000
+
+### Веб-интерфейс
+- **GET /** — веб-интерфейс для загрузки CSV файлов и просмотра результатов
+- Поддержка drag & drop файлов
+- Отображение результатов в таблице
+
+### API эндпоинты
+
+#### 1. Предсказание по пути к файлу
 ```http
 POST /predict
+Content-Type: application/json
+
 {
   "csv_path": "datasets/heart_test.csv"
 }
 ```
-Ответ: `{"predictions":[{"id":..., "prediction":...}, ...]}`.
+Ответ: `{"predictions":[{"id":..., "prediction":...}, ...]}`
+
+#### 2. Предсказание по загруженному файлу
+```http
+POST /predict/upload
+Content-Type: multipart/form-data
+
+file: [CSV файл]
+```
+Ответ: `{"predictions":[{"id":..., "prediction":...}, ...]}`
+
+#### 3. Проверка работоспособности
+```http
+GET /health
+```
+Ответ: `{"status": "ok", "model_loaded": true}`
 
 ## Формат данных и обработка
 - `Unnamed: 0` удаляется.

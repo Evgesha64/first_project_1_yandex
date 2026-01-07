@@ -1,6 +1,7 @@
 catboost==1.2.8
 fastapi==0.115.5
 uvicorn==0.32.1
+python-multipart==0.0.12
 scikit-learn==1.5.2
 pandas==2.3.3
 numpy==2.4.0

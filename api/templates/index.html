@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Attack Risk Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #f0f4ff;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .file-label:hover {
+            background: #764ba2;
+        }
+        .file-name {
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+        .results.show {
+            display: block;
+        }
+        .results-header {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .results-table th {
+            background: #f8f9ff;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+        }
+        .results-table td {
+            padding: 12px;
+            border-top: 1px solid #eee;
+        }
+        .results-table tr:hover {
+            background: #f8f9ff;
+        }
+        .prediction-0 {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .prediction-1 {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .error.show {
+            display: block;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        .loading.show {
+            display: block;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Heart Attack Risk Prediction</h1>
+        <p class="subtitle">Загрузите CSV файл с данными пациентов для предсказания риска</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <p style="margin-bottom: 15px; color: #666;">Перетащите файл сюда или</p>
+            <label for="fileInput" class="file-label">Выбрать файл</label>
+            <input type="file" id="fileInput" accept=".csv">
+            <div class="file-name" id="fileName"></div>
+        </div>
+
+        <button id="predictBtn" onclick="predict()" disabled>Предсказать</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Обработка данных...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results" id="results">
+            <div class="results-header">Результаты предсказаний</div>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Предсказание</th>
+                        <th>Риск</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileName = document.getElementById('fileName');
+        const predictBtn = document.getElementById('predictBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const results = document.getElementById('results');
+        const resultsBody = document.getElementById('resultsBody');
+
+        let selectedFile = null;
+
+        fileInput.addEventListener('change', (e) => {
+            handleFile(e.target.files[0]);
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFile(e.dataTransfer.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+            if (!file.name.endsWith('.csv')) {
+                showError('Пожалуйста, выберите CSV файл');
+                return;
+            }
+            selectedFile = file;
+            fileName.textContent = `Выбран: ${file.name}`;
+            predictBtn.disabled = false;
+            hideError();
+            results.classList.remove('show');
+        }
+
+        async function predict() {
+            if (!selectedFile) return;
+
+            hideError();
+            results.classList.remove('show');
+            loading.classList.add('show');
+            predictBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/predict/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Ошибка при обработке файла');
+                }
+
+                const data = await response.json();
+                displayResults(data.predictions);
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                loading.classList.remove('show');
+                predictBtn.disabled = false;
+            }
+        }
+
+        function displayResults(predictions) {
+            resultsBody.innerHTML = '';
+            predictions.forEach(pred => {
+                const row = document.createElement('tr');
+                const risk = pred.prediction === 1 ? 'Высокий' : 'Низкий';
+                const riskClass = pred.prediction === 1 ? 'prediction-1' : 'prediction-0';
+                row.innerHTML = `
+                    <td>${pred.id}</td>
+                    <td class="${riskClass}">${pred.prediction}</td>
+                    <td class="${riskClass}">${risk}</td>
+                `;
+                resultsBody.appendChild(row);
+            });
+            results.classList.add('show');
+        }
+
+        function showError(message) {
+            error.textContent = message;
+            error.classList.add('show');
+        }
+
+        function hideError() {
+            error.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
+

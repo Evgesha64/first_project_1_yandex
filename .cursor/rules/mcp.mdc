@@ -1,0 +1,147 @@
+---
+alwaysApply: true
+---
+***
+
+# Правила использования MCP инструментов в Cursor
+
+## Основные принципы
+
+### 1. Всегда используйте индексы ячеек (cell_index)
+- Правильно: `cell_index: 0, 1, 2...`
+- Неправильно: `cell_id` (нестабильный)
+- Важно: Индексы начинаются с 0, меняются при добавлении или удалении ячеек
+
+### 2. Проверяйте структуру перед операциями
+
+# Сначала просмотрите структуру
+- notebook_get_data
+# Затем работайте с нужной ячейкой
+- notebook_get_cell_by_index(cell_index: 0)
+
+## Инструменты управления ячейками
+
+### notebook_cell — основные операции
+
+# Добавление
+- notebook_cell(action: "add", type: "code", position: 0, content: "...")
+
+# Удаление
+- notebook_cell(action: "delete", index: 0)
+
+# Перемещение
+- notebook_cell(action: "move", from: 1, to: 0)
+
+# Изменение типа
+- notebook_cell(action: "type", index: 0, type: "markdown")
+
+# Замена содержимого
+- notebook_cell(action: "replace", index: 0, content: "...")
+
+### notebook_patch_cell_by_index — точечные изменения
+
+# Используйте diff patch формат
+- notebook_patch_cell_by_index(
+  cell_index: 0,
+  patch: "--- a/cell\n+++ b/cell\n@@ -1,3 +1,4 @@\n line1\n+new line\n line2"
+)
+
+## Инструменты выполнения
+
+### Выполнение одной ячейки
+
+- notebook_execute_cell_by_index(cell_index: 0)
+
+### Массовое выполнение
+
+# Все ячейки
+- notebook_execute(mode: "all")
+
+# Диапазон ячеек
+- notebook_execute(mode: "range", start: 0, end: 2)
+
+# Одна ячейка
+- notebook_execute(mode: "cell", index: 0)
+
+# Текущая ячейка
+notebook_execute(mode: "current")
+
+## Инструменты поиска и получения данных
+
+# Поиск по содержимому
+notebook_find_cells_by_content(query: "текст для поиска")
+
+# Получение деталей ячейки
+notebook_get_cell_by_index(cell_index: 0)
+
+## Важные моменты
+
+### 1. Обработка ошибок
+
+* Всегда проверяйте статус выполнения
+* Ошибки останавливают массовое выполнение
+* Stack trace доступен в деталях ошибки
+
+### 2. Изображения
+
+* PNG/JPEG обрабатываются автоматически
+* Большие изображения показываются как ссылки
+* Base64 используется для MCP протокола
+
+### 3. Валидация параметров
+
+* Все параметры проверяются автоматически
+* Индексы должны быть >= 0
+* Обязательные поля: action, type, position/index
+
+### 4. Состояние тетрадки
+
+* Структура обновляется после изменений
+* Метаданные сохраняются при операциях
+* Выводы очищаются при замене ячеек
+
+## Рекомендуемый workflow
+
+# 1. Анализ
+notebook_get_data
+notebook_get_cell_by_index(cell_index: X)
+
+# 2. Редактирование
+notebook_cell(action: "replace", index: X, content: "...")
+# или
+notebook_patch_cell_by_index(cell_index: X, patch: "...")
+
+# 3. Тестирование
+notebook_execute_cell_by_index(cell_index: X)
+notebook_execute(mode: "all")
+
+# 4. Проверка
+notebook_get_data
+
+## Частые ошибки
+
+### Неправильно
+
+* Использование `cell_id` вместо `cell_index`
+* Отсутствие обязательных параметров
+* Игнорирование статуса выполнения
+* Работа с несуществующими индексами
+
+### Правильно
+
+* Использовать только `cell_index`
+* Проверять структуру перед изменениями
+* Обрабатывать ошибки
+* Валидировать индексы
+
+## Статусы выполнения
+
+* Executed — успешное выполнение
+* Executed (with errors) — выполнение с ошибками
+* Statistics — количество выполненных ячеек
+* Error Details — детали ошибок со stack trace
+
+Главное правило: всегда начинайте с `notebook_get_data`, чтобы понимать текущее состояние тетрадки.
+---
+
+

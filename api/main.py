@@ -101,7 +101,11 @@ async def predict_from_upload(file: UploadFile = File(...)) -> PredictResponse:
             
             preds_df = predictor.predict_df(df)
             items = [
-                PredictionItem(id=int(row.id), prediction=int(row.prediction))
+                PredictionItem(
+                    id=int(row.id),
+                    prediction=int(row.prediction),
+                    probability=float(row.probability)
+                )
                 for row in preds_df.itertuples(index=False)
             ]
             return PredictResponse(predictions=items)

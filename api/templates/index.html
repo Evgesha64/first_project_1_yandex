@@ -95,6 +95,31 @@
             cursor: not-allowed;
             transform: none;
         }
+        .download-btn {
+            width: auto;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: 0;
+            display: none;
+            padding: 12px 24px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .download-btn:hover {
+            background: #218838;
+        }
+        .results-footer {
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 0 0 8px 8px;
+            text-align: right;
+        }
         .results {
             margin-top: 30px;
             display: none;
@@ -206,6 +231,9 @@
                 </thead>
                 <tbody id="resultsBody"></tbody>
             </table>
+            <div class="results-footer">
+                <button class="download-btn" id="downloadBtn" onclick="downloadResults()">Скачать результаты (CSV)</button>
+            </div>
         </div>
     </div>
 
@@ -218,8 +246,10 @@
         const error = document.getElementById('error');
         const results = document.getElementById('results');
         const resultsBody = document.getElementById('resultsBody');
+        const downloadBtn = document.getElementById('downloadBtn');
 
         let selectedFile = null;
+        let currentPredictions = null;
 
         fileInput.addEventListener('change', (e) => {
             handleFile(e.target.files[0]);
@@ -251,6 +281,8 @@
             predictBtn.disabled = false;
             hideError();
             results.classList.remove('show');
+            downloadBtn.style.display = 'none';
+            currentPredictions = null;
         }
 
         async function predict() {
@@ -258,6 +290,7 @@
 
             hideError();
             results.classList.remove('show');
+            downloadBtn.style.display = 'none';
             loading.classList.add('show');
             predictBtn.disabled = true;
 
@@ -276,6 +309,7 @@
                 }
 
                 const data = await response.json();
+                currentPredictions = data.predictions;
                 displayResults(data.predictions);
             } catch (err) {
                 showError(err.message);
@@ -299,6 +333,7 @@
                 resultsBody.appendChild(row);
             });
             results.classList.add('show');
+            downloadBtn.style.display = 'inline-block';
         }
 
         function showError(message) {
@@ -309,7 +344,32 @@
         function hideError() {
             error.classList.remove('show');
         }
+
+        function downloadResults() {
+            if (!currentPredictions || currentPredictions.length === 0) {
+                showError('Нет результатов для скачивания');
+                return;
+            }
+
+            const csvHeader = 'id,prediction\n';
+            const csvRows = currentPredictions.map(pred => `${pred.id},${pred.prediction}`).join('\n');
+            const csvContent = csvHeader + csvRows;
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'predictions.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     </script>
 </body>
 </html>
+
+
+
 

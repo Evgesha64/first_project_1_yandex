@@ -31,6 +31,7 @@ class PredictRequest(BaseModel):
 class PredictionItem(BaseModel):
     id: int
     prediction: int
+    probability: float
 
 
 class PredictResponse(BaseModel):
@@ -64,7 +65,11 @@ def predict_from_path(request: PredictRequest) -> PredictResponse:
         
         preds_df = predictor.predict_df(df)
         items = [
-            PredictionItem(id=int(row.id), prediction=int(row.prediction))
+            PredictionItem(
+                id=int(row.id),
+                prediction=int(row.prediction),
+                probability=float(row.probability)
+            )
             for row in preds_df.itertuples(index=False)
         ]
         return PredictResponse(predictions=items)

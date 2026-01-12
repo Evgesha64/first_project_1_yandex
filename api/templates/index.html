@@ -225,6 +225,7 @@
                         <th>ID</th>
                         <th>Предсказание</th>
                         <th>Риск</th>
+                        <th>Вероятность</th>
                     </tr>
                 </thead>
                 <tbody id="resultsBody"></tbody>
@@ -320,10 +321,12 @@
                 const row = document.createElement('tr');
                 const risk = pred.prediction === 1 ? 'Высокий' : 'Низкий';
                 const riskClass = pred.prediction === 1 ? 'prediction-1' : 'prediction-0';
+                const probabilityPercent = (pred.probability * 100).toFixed(2);
                 row.innerHTML = `
                     <td>${pred.id}</td>
                     <td class="${riskClass}">${pred.prediction}</td>
                     <td class="${riskClass}">${risk}</td>
+                    <td class="${riskClass}">${probabilityPercent}%</td>
                 `;
                 resultsBody.appendChild(row);
             });
@@ -346,8 +349,10 @@
                 return;
             }
 
-            const csvHeader = 'id,prediction\n';
-            const csvRows = currentPredictions.map(pred => `${pred.id},${pred.prediction}`).join('\n');
+            const csvHeader = 'id,prediction,probability\n';
+            const csvRows = currentPredictions.map(pred => 
+                `${pred.id},${pred.prediction},${pred.probability.toFixed(4)}`
+            ).join('\n');
             const csvContent = csvHeader + csvRows;
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

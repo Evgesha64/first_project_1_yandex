@@ -10,10 +10,12 @@ def run_inference(model_path: Path, input_csv: Path, output_csv: Path) -> None:
     predictor = Predictor(model_path)
     pred_df = predictor.predict_file(input_csv)
 
-    # Сохраняем с индексом, чтобы test.py (index_col=0) прочитал корректно
-    pred_df.to_csv(output_csv, index=True)
+    # Сохраняем только id и prediction для совместимости с test.py
+    # (test.py ожидает точно колонки ["id", "prediction"])
+    output_df = pred_df[["id", "prediction"]]
+    output_df.to_csv(output_csv, index=True)
     print(f"Saved predictions to {output_csv}")
-    print(pred_df.head())
+    print(output_df.head())
 
 
 def parse_args() -> argparse.Namespace:

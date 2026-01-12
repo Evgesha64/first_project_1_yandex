@@ -29,10 +29,12 @@ class Predictor:
         X = df[self.feature_cols]
         X_proc = self.imputer.transform(X)
         preds = self.model.predict(X_proc)
+        probas = self.model.predict_proba(X_proc)
         result = pd.DataFrame(
             {
                 "id": df["id"].values,
                 "prediction": preds.astype(int),
+                "probability": probas[:, 1],  # вероятность класса 1 (высокий риск)
             }
         )
         return result

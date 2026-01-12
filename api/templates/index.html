@@ -97,28 +97,20 @@
         }
         .download-btn {
             width: auto;
-            margin-top: 20px;
-            margin-left: auto;
-            margin-right: 0;
+            margin: 0;
             display: none;
-            padding: 12px 24px;
+            padding: 8px 16px;
             background: #28a745;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.3s;
         }
         .download-btn:hover {
             background: #218838;
-        }
-        .results-footer {
-            padding: 15px;
-            background: #f8f9ff;
-            border-radius: 0 0 8px 8px;
-            text-align: right;
         }
         .results {
             margin-top: 30px;
@@ -133,6 +125,9 @@
             padding: 15px;
             border-radius: 8px 8px 0 0;
             font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .results-table {
             width: 100%;
@@ -220,7 +215,10 @@
         <div class="error" id="error"></div>
 
         <div class="results" id="results">
-            <div class="results-header">Результаты предсказаний</div>
+            <div class="results-header">
+                <span>Результаты предсказаний</span>
+                <button class="download-btn" id="downloadBtn" onclick="downloadResults()">Скачать результаты (CSV)</button>
+            </div>
             <table class="results-table">
                 <thead>
                     <tr>
@@ -231,9 +229,6 @@
                 </thead>
                 <tbody id="resultsBody"></tbody>
             </table>
-            <div class="results-footer">
-                <button class="download-btn" id="downloadBtn" onclick="downloadResults()">Скачать результаты (CSV)</button>
-            </div>
         </div>
     </div>
 
